@@ -1,0 +1,48 @@
+services:
+  reverse-proxy:
+    image: nginx:1.26
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/log:/var/log/nginx
+    networks:
+      - proxy_net
+      - frontend_net
+    depends_on:
+      - wordpress
+
+  wordpress:
+    image: wordpress:php8.2-fpm
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wp_user
+      WORDPRESS_DB_PASSWORD: "${WP_DB_PASSWORD}"
+      WORDPRESS_DB_NAME: wp_db
+    volumes:
+      - ./wp_data:/var/www/html
+    networks:
+      - frontend_net
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:12
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_DATABASE: wp_db
+      MYSQL_USER: wp_user
+      MYSQL_PASSWORD: "${WP_DB_PASSWORD}"
+    volumes:
+      - ./db_data:/var/lib/mysql
+    networks:
+      - frontend_net
+
+networks:
+  proxy_net:
+    driver: bridge
+  frontend_net:
+    driver: bridge
