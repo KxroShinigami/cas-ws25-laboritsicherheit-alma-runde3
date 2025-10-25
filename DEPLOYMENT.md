@@ -27,6 +27,7 @@ docker compose up -d
 ```
 
 ## **Access Your Site:**
+
 - **URL:** `http://YOUR-VM-IP`
 - **Admin:** `http://YOUR-VM-IP/wp-admin`
 - **Complete WordPress setup**
