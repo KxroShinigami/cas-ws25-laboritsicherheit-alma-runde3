@@ -1,6 +1,6 @@
 services:
   reverse-proxy:
-    image: nginx:1.26
+    image: nginx:1.29.2
     restart: always
     ports:
       - "80:80"
@@ -14,7 +14,7 @@ services:
       - wordpress
 
   wordpress:
-    image: wordpress:php8.2-fpm
+    image: wordpress:php8.4-fpm
     restart: always
     environment:
       WORDPRESS_DB_HOST: db:3306
@@ -29,7 +29,7 @@ services:
       - db
 
   db:
-    image: mariadb:12
+    image: mariadb:12.0.2
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
