@@ -25,6 +25,7 @@ services:
       - ./wp_data:/var/www/html
     networks:
       - frontend_net
+      - db_net
     depends_on:
       - db
 
@@ -39,10 +40,13 @@ services:
     volumes:
       - ./db_data:/var/lib/mysql
     networks:
-      - frontend_net
+      - db_net
 
 networks:
   proxy_net:
     driver: bridge
   frontend_net:
     driver: bridge
+  db_net:
+    driver: bridge
+    internal: true
