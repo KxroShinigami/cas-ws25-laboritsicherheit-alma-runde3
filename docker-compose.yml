@@ -5,11 +5,11 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./nginx/log:/var/log/nginx
-      - ./certbot/www:/var/www/certbot/:ro
-      - ./certbot/conf/:/etc/nginx/ssl/:ro
-      - ./wp_data:/var/www/html:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:roZ
+      - ./nginx/log:/var/log/nginx:Z
+      - ./certbot/www:/var/www/certbot/:roZ
+      - ./certbot/conf/:/etc/nginx/ssl/:roZ
+      - ./wp_data:/var/www/html:roZ
     networks:
       - proxy_net
       - frontend_net
@@ -19,8 +19,8 @@ services:
   certbot:
     image: certbot/certbot:latest
     volumes:
-      - ./certbot/www:/var/www/certbot/:rw
-      - ./certbot/conf/:/etc/letsencrypt/:rw
+      - ./certbot/www:/var/www/certbot/:rwZ
+      - ./certbot/conf/:/etc/letsencrypt/:rwZ
     networks:
       - proxy_net
   wordpress:
@@ -32,7 +32,7 @@ services:
       WORDPRESS_DB_PASSWORD: "${WP_DB_PASSWORD}"
       WORDPRESS_DB_NAME: wp_db
     volumes:
-      - ./wp_data:/var/www/html
+      - ./wp_data:/var/www/html:Z
     networks:
       - frontend_net
       - db_net
@@ -48,7 +48,7 @@ services:
       MYSQL_USER: wp_user
       MYSQL_PASSWORD: "${WP_DB_PASSWORD}"
     volumes:
-      - ./db_data:/var/lib/mysql
+      - ./db_data:/var/lib/mysql:Z
     networks:
       - db_net
 
