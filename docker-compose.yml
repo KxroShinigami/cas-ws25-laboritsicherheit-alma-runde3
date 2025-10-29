@@ -8,8 +8,8 @@ services:
     volumes:
       - ./nginx/conf.d/:/etc/nginx/conf.d/:Z,ro
       - nginx_logs:/var/log/nginx
-      - ./certbot/www:/var/www/certbot/:Z,ro
-      - ./certbot/conf/:/etc/nginx/ssl/:Z,ro
+      - ./certbot/www:/var/www/certbot/:z,ro
+      - ./certbot/conf/:/etc/nginx/ssl/:z,ro
       - wp_data:/var/www/html:ro
     networks:
       - proxy_net
@@ -20,8 +20,8 @@ services:
   certbot:
     image: certbot/certbot:latest
     volumes:
-      - ./certbot/www/:/var/www/certbot/:Z,rw
-      - ./certbot/conf/:/etc/letsencrypt/:Z,rw
+      - ./certbot/www/:/var/www/certbot/:z,rw
+      - ./certbot/conf/:/etc/letsencrypt/:z,rw
     networks:
       - proxy_net
   wordpress:
