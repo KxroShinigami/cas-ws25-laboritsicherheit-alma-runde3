@@ -64,8 +64,6 @@ networks:
     internal: true
 
 volumes:
-  certbot_www:
-  certbot_conf:
   db_data:
   nginx_logs:
   wp_data:
