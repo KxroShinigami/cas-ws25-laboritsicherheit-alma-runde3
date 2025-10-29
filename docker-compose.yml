@@ -6,7 +6,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/conf/:/etc/nginx/conf.d/:ro
+      - ./nginx/conf.d/:/etc/nginx/conf.d/:ro
       - nginx_logs:/var/log/nginx
       - certbot_www:/var/www/certbot/:ro
       - certbot_conf:/etc/nginx/ssl/:ro
