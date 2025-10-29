@@ -6,7 +6,7 @@ services:
       - "80:80"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./nginx/log:/var/log/nginx
+      - nginx_logs:/var/log/nginx
       - certbot_www:/var/www/certbot/:ro
       - certbot_conf:/etc/nginx/ssl/:ro
       - wp_data:/var/www/html:ro
@@ -66,4 +66,5 @@ volumes:
   certbot_www:
   certbot_conf:
   db_data:
+  nginx_logs:
   wp_data:
