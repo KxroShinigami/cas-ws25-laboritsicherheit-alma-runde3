@@ -33,3 +33,83 @@ Sie sollen zeigen, wie sich die fachlichen und funktionalen Anforderungen sicher
 - Angemessenheit der technologischen Entscheidungen und Auswahl der Schutzmechanismen
 - Nachvollziehbarkeit, Vollständigkeit, Verständlichkeit der Dokumentation (Test-Accounts bitte mit aufführen)
 - Originalität
+
+## Deployment
+
+### Local Development (Windows)
+
+For local development without SSL, you can use the local configuration:
+
+1. Create a `.env` file with the required environment variables:
+   ```bash
+   WP_DB_PASSWORD=your_password_here
+   MYSQL_ROOT_PASSWORD=your_root_password_here
+   ```
+
+2. Start the containers with the local configuration:
+   ```bash
+   docker compose -f docker-compose.yml -f docker-compose.local.yml up -d
+   ```
+
+3. The application is accessible at `http://localhost` (HTTP only, no SSL).
+
+4. Stop containers:
+   ```bash
+   docker compose down
+   ```
+
+**Note:** The local configuration (`docker-compose.local.yml` and `nginx/conf.d/default-local.conf`) does not use SSL and is intended for local development only.
+
+### Production Deployment (Alma Linux VM)
+
+For deployment on the production VM (alma1.schach.kids):
+
+1. Establish SSH connection to the VM:
+   ```bash
+   ssh bohnenkopf@alma1.schach.kids
+   ```
+
+2. Clone or update the repository:
+   ```bash
+   git clone git@github.com:TobiasGoetz/dhbw-cas-laboritsicherheit-runde1.git
+   cd dhbw-cas-laboritsicherheit-runde1
+   # or if already present:
+   git pull
+   ```
+
+3. Create `.env` file with production passwords:
+   ```bash
+   # Create a .env file with secure passwords
+   WP_DB_PASSWORD=<secure_password>
+   MYSQL_ROOT_PASSWORD=<secure_root_password>
+   ```
+
+4. Set up SSL certificates with Certbot (for initial setup):
+   ```bash
+   podman compose run --rm certbot certonly --webroot \
+     --webroot-path=/var/www/certbot \
+     --email admin@alma1.schach.kids \
+     --agree-tos \
+     --no-eff-email \
+     -d alma1.schach.kids \
+     -d www.alma1.schach.kids
+   ```
+
+5. Start containers:
+   ```bash
+   podman compose up -d
+   ```
+
+6. Check status:
+   ```bash
+   podman compose ps
+   ```
+
+7. View logs:
+   ```bash
+   podman compose logs -f
+   ```
+
+The application is accessible at `https://alma1.schach.kids`. The production configuration uses SSL/TLS with Let's Encrypt certificates and redirects all HTTP requests to HTTPS.
+
+**Important:** Make sure the firewall on the VM allows incoming connections on ports 80 and 443.
