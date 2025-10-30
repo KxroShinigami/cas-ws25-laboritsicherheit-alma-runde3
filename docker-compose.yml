@@ -16,11 +16,6 @@ services:
       - frontend_net
     depends_on:
       - wordpress
-    dns:
-      - 129.143.2.1
-      - 129.143.2.4
-      - 2001:7c0::53:1
-      - 2001:7c0::53:4
 
   certbot:
     image: certbot/certbot:latest
@@ -29,11 +24,6 @@ services:
       - ./certbot/conf/:/etc/letsencrypt/:z,rw
     networks:
       - proxy_net
-    dns:
-      - 129.143.2.1
-      - 129.143.2.4
-      - 2001:7c0::53:1
-      - 2001:7c0::53:4
 
   wordpress:
     image: wordpress:php8.4-fpm
@@ -50,11 +40,6 @@ services:
       - db_net
     depends_on:
       - db
-    dns:
-      - 129.143.2.1
-      - 129.143.2.4
-      - 2001:7c0::53:1
-      - 2001:7c0::53:4
 
   db:
     image: mariadb:12.0.2
@@ -68,18 +53,11 @@ services:
       - db_data:/var/lib/mysql
     networks:
       - db_net
-    dns:
-      - 129.143.2.1
-      - 129.143.2.4
-      - 2001:7c0::53:1
-      - 2001:7c0::53:4
 
 networks:
   proxy_net:
     driver: bridge
     ipam:
-      config:
-        - subnet: 172.20.0.0/16
       dns_nameservers:
         - 129.143.2.1
         - 129.143.2.4
@@ -89,8 +67,6 @@ networks:
     driver: bridge
     internal: true
     ipam:
-      config:
-        - subnet: 172.21.0.0/16
       dns_nameservers:
         - 129.143.2.1
         - 129.143.2.4
@@ -100,8 +76,6 @@ networks:
     driver: bridge
     internal: true
     ipam:
-      config:
-        - subnet: 172.22.0.0/16
       dns_nameservers:
         - 129.143.2.1
         - 129.143.2.4
