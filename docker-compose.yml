@@ -59,7 +59,6 @@ networks:
     driver: bridge
   frontend_net:
     driver: bridge
-    internal: true
   db_net:
     driver: bridge
     internal: true
