@@ -36,3 +36,8 @@ desktop.ini
 # Temporary files
 *.tmp
 .cache/
+
+# Data files
+certbot/
+wp_data/
+db_data/
