@@ -57,30 +57,12 @@ services:
 networks:
   proxy_net:
     driver: bridge
-    ipam:
-      dns_nameservers:
-        - 129.143.2.1
-        - 129.143.2.4
-        - 2001:7c0::53:1
-        - 2001:7c0::53:4
   frontend_net:
     driver: bridge
     internal: true
-    ipam:
-      dns_nameservers:
-        - 129.143.2.1
-        - 129.143.2.4
-        - 2001:7c0::53:1
-        - 2001:7c0::53:4
   db_net:
     driver: bridge
     internal: true
-    ipam:
-      dns_nameservers:
-        - 129.143.2.1
-        - 129.143.2.4
-        - 2001:7c0::53:1
-        - 2001:7c0::53:4
 
 volumes:
   db_data:

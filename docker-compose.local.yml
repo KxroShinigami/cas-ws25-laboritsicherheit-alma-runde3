@@ -9,4 +9,3 @@ services:
     ports:
       # Only expose port 80 for local development (443 not needed without SSL)
       - "80:80"
-
