@@ -1,0 +1,47 @@
+# DHBW CAS - Labor IT Sicherheit - Runde 1
+
+## Project Context
+- University project: 3 weeks, 2 people
+- Module: Labor IT Sicherheit (IT Security Lab)
+- Focus: IT security best practices and threat mitigation
+- Host: alma1.schach.kids (Alma Linux 9.6 VM)
+- User: bohnenkopf (rootless, SSH key authentication)
+- Local testing: Windows 11 with Docker
+- Deployment: SSH → clone repo → `podman compose up -d`
+
+## Tech Stack
+- Docker Compose / Podman Compose
+- nginx (reverse proxy)
+- WordPress (PHP 8.4-FPM)
+- MariaDB 12.0.2
+- Certbot (Let's Encrypt SSL certificates)
+
+## Security Priorities
+Follow security best practices proportional to the use case described in the Notion task "Aufgabe - Runde 1". Key areas:
+- SSH hardening (fail2ban, key-based auth)
+- Firewall configuration (iptables/firewalld)
+- Rate limiting (DoS protection)
+- Path traversal protection
+- AppArmor/SELinux
+- XSS prevention
+- Database security
+- SSL/TLS configuration
+- Network segmentation (internal networks)
+- Container security (least privilege, read-only volumes where possible)
+
+## Code Style
+- Use standard formatting and linting for all file types
+- Follow Docker Compose best practices
+- Use clear, descriptive names
+- Comment security-critical configurations
+
+## Files & Structure
+- Keep sensitive data out of version control (use .env files)
+- Document security decisions and threat mitigations
+- Maintain clear separation between dev and production configs
+
+## Deployment Notes
+- Production: Alma Linux 9.6 VM with Podman
+- Local: Windows 11 with Docker
+- Use `podman compose` on the VM, `docker compose` locally
+
