@@ -41,12 +41,14 @@ Sie sollen zeigen, wie sich die fachlichen und funktionalen Anforderungen sicher
 For local development without SSL, you can use the local configuration:
 
 1. Create a `.env` file with the required environment variables:
+
    ```bash
    WP_DB_PASSWORD=your_password_here
    MYSQL_ROOT_PASSWORD=your_root_password_here
    ```
 
 2. Start the containers with the local configuration:
+
    ```bash
    docker compose -f docker-compose.yml -f docker-compose.local.yml up -d
    ```
@@ -65,11 +67,13 @@ For local development without SSL, you can use the local configuration:
 For deployment on the production VM (alma1.schach.kids):
 
 1. Establish SSH connection to the VM:
+
    ```bash
    ssh bohnenkopf@alma1.schach.kids
    ```
 
 2. Clone or update the repository:
+
    ```bash
    git clone git@github.com:TobiasGoetz/dhbw-cas-laboritsicherheit-runde1.git
    cd dhbw-cas-laboritsicherheit-runde1
@@ -78,6 +82,7 @@ For deployment on the production VM (alma1.schach.kids):
    ```
 
 3. Create `.env` file with production passwords:
+
    ```bash
    # Create a .env file with secure passwords
    WP_DB_PASSWORD=<secure_password>
@@ -85,6 +90,7 @@ For deployment on the production VM (alma1.schach.kids):
    ```
 
 4. Set up SSL certificates with Certbot (for initial setup):
+
    ```bash
    podman compose run --rm certbot certonly --webroot \
      --webroot-path=/var/www/certbot \
@@ -96,11 +102,13 @@ For deployment on the production VM (alma1.schach.kids):
    ```
 
 5. Start containers:
+
    ```bash
    podman compose up -d
    ```
 
 6. Check status:
+
    ```bash
    podman compose ps
    ```
@@ -113,3 +121,85 @@ For deployment on the production VM (alma1.schach.kids):
 The application is accessible at `https://alma1.schach.kids`. The production configuration uses SSL/TLS with Let's Encrypt certificates and redirects all HTTP requests to HTTPS.
 
 **Important:** Make sure the firewall on the VM allows incoming connections on ports 80 and 443.
+
+#### Automatic Startup After Reboot (Systemd Service)
+
+To ensure the containers start automatically after system reboot, set up a systemd user service:
+
+1. **Enable linger for the user (if not already done):**
+
+   ```bash
+   sudo loginctl enable-linger bohnenkopf
+   ```
+
+2. **Create the systemd user directory:**
+
+   ```bash
+   mkdir -p ~/.config/systemd/user
+   ```
+
+3. **Create the podman-compose systemd unit template:**
+
+   ```bash
+   vi ~/.config/systemd/user/podman-compose@.service
+   ```
+
+   Paste the following content (adjust the path to podman-compose if different):
+
+   ```ini
+   [Unit]
+   Description=%i rootless pod (podman-compose)
+
+   [Service]
+   Type=simple
+   EnvironmentFile=%h/.config/containers/compose/projects/%i.env
+   ExecStartPre=-/home/bohnenkopf/.local/bin/podman-compose up --no-start
+   ExecStartPre=/usr/bin/podman pod start pod_%i
+   ExecStart=/home/bohnenkopf/.local/bin/podman-compose wait
+   ExecStop=/usr/bin/podman pod stop pod_%i
+
+   [Install]
+   WantedBy=default.target
+   ```
+
+4. **Reload systemd daemon:**
+
+   ```bash
+   systemctl --user daemon-reload
+   ```
+
+5. **Navigate to your project directory and register the compose file:**
+
+   ```bash
+   cd ~/dhbw-cas-laboritsicherheit-runde1
+   podman-compose -f docker-compose.yml systemd -a register
+   ```
+
+6. **Enable and start the service:**
+
+   ```bash
+   systemctl --user enable podman-compose@docker-compose.yml
+   systemctl --user start podman-compose@docker-compose.yml
+   ```
+
+7. **Verify the service is running:**
+   ```bash
+   systemctl --user status podman-compose@docker-compose.yml
+   podman compose ps
+   ```
+
+**Note:** The service name will be based on your project directory name. After registration, you can use:
+
+- `systemctl --user enable --now 'podman-compose@dhbw-cas-laboritsicherheit-runde1'` (if your project dir is `dhbw-cas-laboritsicherheit-runde1`)
+- `systemctl --user status 'podman-compose@dhbw-cas-laboritsicherheit-runde1'`
+- `journalctl --user -xeu 'podman-compose@dhbw-cas-laboritsicherheit-runde1'`
+
+**Troubleshooting:**
+
+- If `podman-compose` is not found, ensure it's in your PATH. Check with `which podman-compose` and add it to your `~/.bashrc` if needed:
+  ```bash
+  export PATH="$HOME/.local/bin:$PATH"
+  ```
+- Verify linger is enabled: `loginctl show-user bohnenkopf | grep Linger`
+- Check service logs: `journalctl --user -u podman-compose@docker-compose.yml -f`
+- Check pod status: `podman pod ps` and `podman pod stats 'pod_dhbw-cas-laboritsicherheit-runde1'`
