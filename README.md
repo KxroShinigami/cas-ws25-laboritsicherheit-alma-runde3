@@ -45,6 +45,7 @@ For local development without SSL, you can use the local configuration:
    ```bash
    WP_DB_PASSWORD=your_password_here
    MYSQL_ROOT_PASSWORD=your_root_password_here
+   REDIS_PASSWORD=your_redis_password_here  # Optional, defaults to 'redis_password'
    ```
 
 2. Start the containers with the local configuration:
@@ -87,6 +88,7 @@ For deployment on the production VM (alma1.schach.kids):
    # Create a .env file with secure passwords
    WP_DB_PASSWORD=<secure_password>
    MYSQL_ROOT_PASSWORD=<secure_root_password>
+   REDIS_PASSWORD=<secure_redis_password>  # Optional, defaults to 'redis_password'
    ```
 
 4. Set up SSL certificates with Certbot (for initial setup):
@@ -121,6 +123,30 @@ For deployment on the production VM (alma1.schach.kids):
 The application is accessible at `https://alma1.schach.kids`. The production configuration uses SSL/TLS with Let's Encrypt certificates and redirects all HTTP requests to HTTPS.
 
 **Important:** Make sure the firewall on the VM allows incoming connections on ports 80 and 443.
+
+### Redis Object Cache Setup
+
+Redis is included in the docker-compose setup for use with the WordPress "Redis Object Cache" plugin. The configuration follows the [official plugin installation guide](https://github.com/rhubarbgroup/redis-cache/blob/develop/INSTALL.md).
+
+**To enable the cache:**
+
+1. **Install the Redis Object Cache plugin** in WordPress admin:
+   - Go to Plugins → Add New
+   - Search for "Redis Object Cache" by Till Krüss
+   - Install and activate the plugin
+
+2. **Enable the cache**:
+   - Go to Settings → Redis
+   - The plugin should auto-detect Redis at `redis:6379` (Docker service name)
+   - If it doesn't connect automatically, add this to `wp-config.php` (before the `/* That's all, stop editing! Happy publishing. */` line):
+     ```php
+     define('WP_REDIS_HOST', 'redis');
+     define('WP_REDIS_PORT', 6379);
+     define('WP_REDIS_PASSWORD', 'redis_password'); // or your REDIS_PASSWORD from .env
+     ```
+   - Click "Enable Object Cache"
+
+The Redis service runs on an internal network (`cache_net`) and is password-protected for security.
 
 #### Automatic Startup After Reboot (Systemd Service)
 

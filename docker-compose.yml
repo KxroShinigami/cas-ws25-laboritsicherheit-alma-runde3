@@ -38,8 +38,19 @@ services:
     networks:
       - frontend_net
       - db_net
+      - cache_net
     depends_on:
       - db
+      - redis
+
+  redis:
+    image: redis:8-alpine
+    restart: always
+    command: redis-server --appendonly yes --requirepass "${REDIS_PASSWORD:-redis_password}"
+    volumes:
+      - redis_data:/data
+    networks:
+      - cache_net
 
   db:
     image: mariadb:12.0.2
@@ -62,8 +73,12 @@ networks:
   db_net:
     driver: bridge
     internal: true
+  cache_net:
+    driver: bridge
+    internal: true
 
 volumes:
   db_data:
   nginx_logs:
   wp_data:
+  redis_data:
