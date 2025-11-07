@@ -48,23 +48,11 @@ services:
   redis:
     image: redis:8-alpine
     restart: always
-    command: >
-      redis-server
-      --appendonly yes
-      --requirepass "${REDIS_PASSWORD:-redis_password}"
-      --maxmemory 256mb
-      --maxmemory-policy allkeys-lru
-      --rename-command FLUSHDB ""
-      --rename-command FLUSHALL ""
-      --rename-command CONFIG ""
+    command: redis-server --appendonly yes --requirepass "${REDIS_PASSWORD:-redis_password}"
     volumes:
       - redis_data:/data
     networks:
       - cache_net
-    security_opt:
-      - no-new-privileges:true
-    tmpfs:
-      - /tmp
 
   db:
     image: mariadb:12.0.2
