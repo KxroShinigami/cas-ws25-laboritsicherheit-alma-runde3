@@ -33,6 +33,8 @@ services:
       WORDPRESS_DB_USER: wp_user
       WORDPRESS_DB_PASSWORD: "${WP_DB_PASSWORD}"
       WORDPRESS_DB_NAME: wp_db
+      WP_REDIS_HOST: redis
+      WP_REDIS_PASSWORD: "${REDIS_PASSWORD}"
     volumes:
       - wp_data:/var/www/html
     networks:
