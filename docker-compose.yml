@@ -48,11 +48,16 @@ services:
   redis:
     image: redis:8-alpine
     restart: always
-    command: redis-server --appendonly yes --requirepass "${REDIS_PASSWORD:-redis_password}"
+    command: redis-server /etc/redis/redis.conf --requirepass "${REDIS_PASSWORD:-redis_password}"
     volumes:
       - redis_data:/data
+      - ./redis/redis.conf:/etc/redis/redis.conf:ro
     networks:
       - cache_net
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
 
   db:
     image: mariadb:12.0.2
