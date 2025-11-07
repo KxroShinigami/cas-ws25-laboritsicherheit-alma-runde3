@@ -48,10 +48,23 @@ services:
   redis:
     image: redis:8-alpine
     restart: always
-    command: redis-server /etc/redis/redis.conf --requirepass "${REDIS_PASSWORD:-redis_password}"
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --requirepass "${REDIS_PASSWORD:-redis_password}"
+      --protected-mode yes
+      --timeout 300
+      --maxclients 10000
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --rename-command FLUSHDB ""
+      --rename-command FLUSHALL ""
+      --rename-command CONFIG ""
+      --rename-command DEBUG ""
+      --rename-command KEYS ""
     volumes:
       - redis_data:/data
-      - ./redis/redis.conf:/etc/redis/redis.conf:ro
     networks:
       - cache_net
     security_opt:
