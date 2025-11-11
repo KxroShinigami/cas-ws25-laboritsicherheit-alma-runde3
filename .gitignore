@@ -32,6 +32,7 @@ desktop.ini
 *.bak
 *.backup
 *.old
+backups/
 
 # Temporary files
 *.tmp

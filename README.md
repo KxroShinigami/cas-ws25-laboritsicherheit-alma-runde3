@@ -148,6 +148,77 @@ Redis is included in the docker-compose setup for use with the WordPress "Redis 
 
 The Redis service runs on an internal network (`cache_net`) and is password-protected for security.
 
+### Volume Backup and Restore
+
+The project includes scripts to backup and restore Podman volumes. This is important for data persistence and disaster recovery.
+
+**Backup volumes:**
+
+```bash
+# Make scripts executable (on Linux/VM)
+chmod +x backup-volumes.sh restore-volumes.sh
+
+# Create a backup (defaults to ./backups/)
+./backup-volumes.sh
+
+# Or specify a custom backup directory
+./backup-volumes.sh /path/to/backups
+
+# Stop containers before backup for consistent database backups (recommended)
+./backup-volumes.sh --stop-containers
+```
+
+**Important:** Backing up while containers are running:
+- **Safe for:** `nginx_logs`, `wp_data` (mostly static files)
+- **Risky for:** `db_data`, `redis_data` (database files may be inconsistent)
+
+The script will warn you if containers are running. For production backups, it's recommended to:
+1. Stop containers before backup: `podman compose stop && ./backup-volumes.sh && podman compose start`
+2. Or use the `--stop-containers` flag: `./backup-volumes.sh --stop-containers` (automatically stops and restarts)
+
+The backup script will:
+- Create a timestamped backup directory (e.g., `./backups/20240101_120000/`)
+- Backup all volumes: `db_data`, `nginx_logs`, `wp_data`, `redis_data`
+- Create a manifest file with backup metadata (including whether containers were stopped)
+
+**Restore volumes:**
+
+```bash
+# Restore from a specific backup directory
+./restore-volumes.sh ./backups/20240101_120000
+```
+
+**Copy backups to another machine:**
+
+For disaster recovery, it's recommended to copy backups to an external server:
+
+```bash
+# Copy entire backup directory to external server
+scp -r ./backups/20240101_120000 user@external-server:/path/to/destination
+
+# Or create a compressed archive first, then copy
+tar -czf backup-20240101_120000.tar.gz ./backups/20240101_120000
+scp backup-20240101_120000.tar.gz user@external-server:/path/to/destination
+```
+
+**Manual backup (single volume):**
+
+If you need to backup a single volume manually, you can use:
+
+```bash
+podman run --rm \
+  --mount "type=volume,source=<volume-name>,destination=/volume" \
+  -v "$(pwd):/backup" \
+  busybox \
+  tar -czf /backup/<backup-filename>.tar.gz -C /volume .
+```
+
+**Note:** Podman Compose prefixes volume names with the project directory name. The scripts automatically detect the correct volume names. To list all volumes manually:
+
+```bash
+podman volume ls
+```
+
 #### Automatic Startup After Reboot (Systemd Service)
 
 To ensure the containers start automatically after system reboot, set up a systemd user service:
