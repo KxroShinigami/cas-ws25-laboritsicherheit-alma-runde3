@@ -24,8 +24,7 @@ mkdir -p "${BACKUP_PATH}"
 echo "Starting volume backup to ${BACKUP_PATH}..."
 
 # Check if containers are running
-RUNNING_CONTAINERS=$(podman compose ps --format json 2>/dev/null | grep -c '"State":"running"' || echo "0")
-if [ "${RUNNING_CONTAINERS}" -gt 0 ]; then
+if podman compose ps 2>/dev/null | grep -q "Up\|running" 2>/dev/null; then
   if [ "${STOP_CONTAINERS}" = false ]; then
     echo ""
     echo "⚠️  WARNING: Containers are currently running!"
@@ -86,9 +85,13 @@ for volume_base in "${VOLUMES[@]}"; do
   
   echo "Backing up volume: ${volume_name}"
   
+  # Use absolute path for backup directory and ensure it's writable
+  BACKUP_ABS_PATH=$(cd "${BACKUP_PATH}" && pwd)
+  
   podman run --rm \
+    --userns=keep-id \
     --mount "type=volume,source=${volume_name},destination=/volume" \
-    -v "$(pwd)/${BACKUP_PATH}:/backup" \
+    -v "${BACKUP_ABS_PATH}:/backup:Z" \
     busybox \
     tar -czf "/backup/${volume_base}.tar.gz" -C /volume .
   
