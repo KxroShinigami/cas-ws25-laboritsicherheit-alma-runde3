@@ -20,6 +20,8 @@ BACKUP_PATH="${BACKUP_DIR}/${TIMESTAMP}"
 
 # Create backup directory
 mkdir -p "${BACKUP_PATH}"
+# Ensure backup directory is writable
+chmod 755 "${BACKUP_PATH}"
 
 echo "Starting volume backup to ${BACKUP_PATH}..."
 
@@ -85,15 +87,21 @@ for volume_base in "${VOLUMES[@]}"; do
   
   echo "Backing up volume: ${volume_name}"
   
-  # Use absolute path for backup directory and ensure it's writable
+  # Use absolute path for backup directory
   BACKUP_ABS_PATH=$(cd "${BACKUP_PATH}" && pwd)
   
-  podman run --rm \
-    --userns=keep-id \
-    --mount "type=volume,source=${volume_name},destination=/volume" \
-    -v "${BACKUP_ABS_PATH}:/backup:Z" \
-    busybox \
-    tar -czf "/backup/${volume_base}.tar.gz" -C /volume .
+  # For rootless Podman, use podman unshare to access volume files in the user namespace
+  # Get the volume mount point
+  VOLUME_MOUNTPOINT=$(podman volume inspect "${volume_name}" --format '{{.Mountpoint}}' 2>/dev/null)
+  
+  if [ -z "${VOLUME_MOUNTPOINT}" ] || [ ! -d "${VOLUME_MOUNTPOINT}" ]; then
+    echo "✗ Failed to get volume mountpoint for ${volume_name}"
+    exit 1
+  fi
+  
+  # Use podman unshare to run tar in the user namespace (required for rootless Podman)
+  # This allows access to files owned by any user in the volume
+  podman unshare sh -c "cd '${VOLUME_MOUNTPOINT}' && tar -czf '${BACKUP_ABS_PATH}/${volume_base}.tar.gz' ."
   
   if [ $? -eq 0 ]; then
     echo "✓ Successfully backed up ${volume_name} -> ${volume_base}.tar.gz"
