@@ -1,19 +1,15 @@
-# DHBW CAS - Labor IT Sicherheit - Runde 1
+# DHBW CAS - Labor IT Sicherheit - Runde 3
 
 Gruppenmitglieder:
 
 - Jens Hausdorf
-- Tobias Goetz
+- Vitali Wiegandt
 
 ## Aufgabenstellung
 
 Setzen Sie in der VM einen Server unter Verwendung geeigneter Werkzeuge und Technologien auf. Wählen Sie im Zweifelsfall die einfachere Realisierungsvariante, damit Sie nicht mit „Kanonen auf Spatzen schießen“. Die Webseite braucht neben der Grundfunktionalität für den beschriebenen Anwendungsfall keine echten oder gar sinnvolle Inhalte und ein ausgefeiltes Design zu haben, aber etwas Content in einigermaßen ansprechender Form (gerne KI-generiert) wäre nett, um einen realistischen Eindruck zu haben.
 
-Überlegen Sie sich, wie das System (auf den verschiedenen Ebenen OS, Webserver, Anwendung) dem Schutzbedarf entsprechend abgesichert werden kann. Dokumentieren Sie, wie Sie zu Ihren Entscheidungen gelangt sind und (kurz, aber nachvollziehbar) wie Sie diese umgesetzt haben. Halten Sie fest, gegen welche
-
-Bedrohungen Ihre Maßnahmen wirken. Ggf. können Sie auch noch angeben, wie die Wirksamkeit der Maßnahmen überprüft werden kann.
-
-Bauen Sie zu Demonstrationszwecken bitte absichtlich am zwei Schwachstellen in Ihre Lösung ein. Diese Schwachstellen dokumentieren Sie in einem separaten Dokument kurz (Ursache, praktische Ausnutzung, mögliche Konsequenzen). Beschreiben Sie, wie die Schwachstellen vermieden werden können. Dies kann auch in der Form geschehen, dass Sie in bestimmten Teilen Ihres Systems Realisierungsvarianten ohne diese Schwachstellen umsetzen.
+Überlegen Sie sich, wie das System (auf den verschiedenen Ebenen OS, Webserver, Anwendung) dem Schutzbedarf entsprechend abgesichert werden kann. Dokumentieren Sie, wie Sie zu Ihren Entscheidungen gelangt sind und (kurz, aber nachvollziehbar) wie Sie diese umgesetzt haben. Halten Sie fest, gegen welche Bedrohungen Ihre Maßnahmen wirken. Ggf. können Sie auch noch angeben, wie die Wirksamkeit der Maßnahmen überprüft werden kann.
 
 **Allgemeine Regeln:**
 
@@ -65,21 +61,23 @@ For local development without SSL, you can use the local configuration:
 
 ### Production Deployment (Alma Linux VM)
 
-For deployment on the production VM (alma1.schach.kids):
+For deployment on the production VM (alma-3.new.dhbw.it):
 
 1. Establish SSH connection to the VM:
 
    ```bash
-   ssh bohnenkopf@alma1.schach.kids
+   ssh bohnenkopf@alma-3.new.dhbw.it
    ```
 
 2. Clone or update the repository:
 
    ```bash
-   git clone git@github.com:TobiasGoetz/dhbw-cas-laboritsicherheit-runde1.git
-   cd dhbw-cas-laboritsicherheit-runde1
+   git clone git@github.com:KxroShinigami/cas-ws25-laboritsicherheit-alma-runde3.git
+   cd cas-ws25-laboritsicherheit-alma-runde3
    # or if already present:
    git pull
+   # a deployment token with a passphrase is used:
+   Enter passphrase for key '/home/bohnenkopf/.ssh/id_ed25519': <enter_passphrase>
    ```
 
 3. Create `.env` file with production passwords:
@@ -96,11 +94,11 @@ For deployment on the production VM (alma1.schach.kids):
    ```bash
    podman compose run --rm certbot certonly --webroot \
      --webroot-path=/var/www/certbot \
-     --email admin@alma1.schach.kids \
+     --email admin@alma-3.new.dhbw.it \
      --agree-tos \
      --no-eff-email \
-     -d alma1.schach.kids \
-     -d www.alma1.schach.kids
+     -d alma-3.new.dhbw.it \
+     -d www.alma-3.new.dhbw.it
    ```
 
 5. Start containers:
@@ -120,7 +118,7 @@ For deployment on the production VM (alma1.schach.kids):
    podman compose logs -f
    ```
 
-The application is accessible at `https://alma1.schach.kids`. The production configuration uses SSL/TLS with Let's Encrypt certificates and redirects all HTTP requests to HTTPS.
+The application is accessible at `https://alma-3.new.dhbw.it`. The production configuration uses SSL/TLS with Let's Encrypt certificates and redirects all HTTP requests to HTTPS.
 
 **Important:** Make sure the firewall on the VM allows incoming connections on ports 80 and 443.
 
