@@ -53,6 +53,7 @@ For local development without SSL, you can use the local configuration:
 3. The application is accessible at `http://localhost` (HTTP only, no SSL).
 
 4. Stop containers:
+
    ```bash
    docker compose down
    ```
@@ -92,13 +93,21 @@ For deployment on the production VM (alma-3.new.dhbw.it):
 4. Set up SSL certificates with Certbot (for initial setup):
 
    ```bash
+   mkdir -p ./certbot/conf/live/alma-3.new.dhbw.it
+
+   openssl req -x509 -nodes -newkey rsa:4096 \
+      -keyout ./certbot/conf/live/alma-3.new.dhbw.it/privkey.pem \
+      -out ./certbot/conf/live/alma-3.new.dhbw.it/fullchain.pem \
+      -days 365 \
+      -subj "/C=DE/ST=Baden-Wuerttemberg/L=Heilbronn/O=DHBW CAS/OU=IT/CN=alma-3.new.dhbw.it"
+
    podman compose run --rm certbot certonly --webroot \
-     --webroot-path=/var/www/certbot \
-     --email admin@alma-3.new.dhbw.it \
-     --agree-tos \
-     --no-eff-email \
-     -d alma-3.new.dhbw.it \
-     -d www.alma-3.new.dhbw.it
+      --webroot-path=/var/www/certbot \
+      --email admin@alma-3.new.dhbw.it \
+      --agree-tos \
+      --no-eff-email \
+      -d alma-3.new.dhbw.it \
+      --force-renewal
    ```
 
 5. Start containers:
@@ -114,6 +123,7 @@ For deployment on the production VM (alma-3.new.dhbw.it):
    ```
 
 7. View logs:
+
    ```bash
    podman compose logs -f
    ```
@@ -137,11 +147,13 @@ Redis is included in the docker-compose setup for use with the WordPress "Redis 
    - Go to Settings → Redis
    - The plugin should auto-detect Redis at `redis:6379` (Docker service name)
    - If it doesn't connect automatically, add this to `wp-config.php` (before the `/* That's all, stop editing! Happy publishing. */` line):
+
      ```php
      define('WP_REDIS_HOST', 'redis');
      define('WP_REDIS_PORT', 6379);
      define('WP_REDIS_PASSWORD', 'redis_password'); // or your REDIS_PASSWORD from .env
      ```
+
    - Click "Enable Object Cache"
 
 The Redis service runs on an internal network (`cache_net`) and is password-protected for security.
@@ -167,14 +179,17 @@ chmod +x backup-volumes.sh restore-volumes.sh
 ```
 
 **Important:** Backing up while containers are running:
+
 - **Safe for:** `nginx_logs`, `wp_data` (mostly static files)
 - **Risky for:** `db_data`, `redis_data` (database files may be inconsistent)
 
 The script will warn you if containers are running. For production backups, it's recommended to:
+
 1. Stop containers before backup: `podman compose stop && ./backup-volumes.sh && podman compose start`
 2. Or use the `--stop-containers` flag: `./backup-volumes.sh --stop-containers` (automatically stops and restarts)
 
 The backup script will:
+
 - Create a timestamped backup directory (e.g., `./backups/20240101_120000/`)
 - Backup all volumes: `db_data`, `nginx_logs`, `wp_data`, `redis_data`
 - Create a manifest file with backup metadata (including whether containers were stopped)
@@ -278,6 +293,7 @@ To ensure the containers start automatically after system reboot, set up a syste
    ```
 
 7. **Verify the service is running:**
+
    ```bash
    systemctl --user status podman-compose@docker-compose.yml
    podman compose ps
@@ -292,9 +308,11 @@ To ensure the containers start automatically after system reboot, set up a syste
 **Troubleshooting:**
 
 - If `podman-compose` is not found, ensure it's in your PATH. Check with `which podman-compose` and add it to your `~/.bashrc` if needed:
+
   ```bash
   export PATH="$HOME/.local/bin:$PATH"
   ```
+
 - Verify linger is enabled: `loginctl show-user bohnenkopf | grep Linger`
 - Check service logs: `journalctl --user -u podman-compose@docker-compose.yml -f`
 - Check pod status: `podman pod ps` and `podman pod stats 'pod_dhbw-cas-laboritsicherheit-runde1'`
